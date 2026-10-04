@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAKE-CMS</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 16px;
+    color: #000;
+    background: #f1f4f8;
+  }
+  a { text-decoration: none; }
+
+  /* ===== Header ===== */
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    height: 72px;
+    background: linear-gradient(135deg, rgb(93,0,0) 0%, rgb(107,0,0) 100%);
+    box-shadow: rgba(0,0,0,0.15) 0 2px 8px;
+  }
+  .header-left { display: flex; align-items: center; flex: 1 1 0; min-width: 0; }
+  .logo-wrap { width: 128px; }
+  .logo-wrap img { width: 128px; display: block; filter: brightness(0) invert(1); }
+  .menu-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 36px; padding: 0 12px;
+    background: transparent; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.9); font-size: 20px;
+  }
+  .menu-btn svg { color: #fff; }
+
+  /* ===== Layout ===== */
+  .app-main {
+    padding: 0 12px 16px;
+    background: rgb(241,244,248);
+    min-height: calc(100vh - 142px);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .main-scroll { width: 100%; overflow: auto hidden; }
+  .main-center { display: flex; justify-content: center; min-width: 100%; }
+  .main-max { max-width: 1200px; width: 100%; }
+  .space { display: flex; flex-direction: column; gap: 16px; width: 100%; padding-top: 16px; }
+  .space-item { width: 100%; }
+
+  /* ===== Collapse ===== */
+  .collapse {
+    background: rgba(0, 0, 0, 0.02);
+    border: 0.8px solid #d9d9d9;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .collapse-item { border-bottom: 0.8px solid #d9d9d9; }
+  .collapse-item:last-child { border-bottom: none; }
+  .collapse-header {
+    display: flex; align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px; color: rgb(31,35,41);
+    user-select: none;
+  }
+  .collapse-header:hover { background: rgba(0,0,0,0.04); }
+  .collapse-arrow {
+    display: inline-flex; margin-right: 8px;
+    font-size: 12px; color: rgb(31,35,41);
+    transition: transform 0.2s;
+  }
+  .collapse-item.open .collapse-arrow { transform: rotate(90deg); }
+  .collapse-content {
+    display: none;
+    padding: 12px 16px;
+    font-size: 14px; color: rgba(0,0,0,0.65);
+    border-top: 1px solid #f0f0f0;
+  }
+  .collapse-item.open .collapse-content { display: block; }
+
+  /* ===== Card ===== */
+  .card {
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    width: 100%;
+  }
+  .card-head {
+    min-height: 48px;
+    display: flex; align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .card-head-title { font-size: 16px; font-weight: 600; color: rgb(31,35,41); }
+  .card-body { padding: 24px; }
+
+  /* ===== Function grid ===== */
+  .func-grid {
+    display: flex; flex-wrap: wrap; gap: 8px 8px;
+  }
+  .func-cell { width: 82px; text-align: center; }
+  .func-inner {
+    display: flex; flex-direction: column; align-items: center;
+    font-size: 14px;
+  }
+  .func-cell a { color: rgb(149,17,5); }
+  .badge { position: relative; display: inline-flex; line-height: 1; }
+  .avatar {
+    width: 72px; height: 72px;
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 36px; color: #fff;
+    margin-bottom: 8px;
+  }
+  .badge-count {
+    position: absolute;
+    top: -6px; right: -8px;
+    min-width: 20px; height: 20px; padding: 0 6px;
+    background: #ff4d4f; color: #fff;
+    border-radius: 10px;
+    font-size: 12px; line-height: 20px; text-align: center;
+    box-shadow: 0 0 0 1px #fff;
+  }
+
+    /* ===== Welcome card ===== */
+  .welcome-body { display: flex; justify-content: space-between; align-items: flex-start; }
+  .welcome-col { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .welcome-title { font-weight: 700; color: rgba(0,0,0,0.88); font-size: 16px; }
+  .link-btn {
+    background: none; border: none; padding: 0; cursor: pointer;
+    font-size: 14px; line-height: 1.5; color: rgb(149,17,5); font-family: inherit;
+    text-align: left;
+  }
+  .welcome-col a { font-size: 14px; line-height: 1.5; color: rgb(149,17,5); }
+  .avatar-photo { width: 48px; height: 66px; object-fit: cover; border-radius: 2px; }
+
+  /* ===== Student info popover ===== */
+  .info-popover-wrap { position: relative; display: inline-block; }
+  .info-popover {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    width: 272px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12), 0 9px 28px 8px rgba(0,0,0,0.05);
+    padding: 16px 18px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-14px, 16px) scale(0.85);
+    transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.28s;
+    z-index: 100;
+  }
+  .info-popover.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(0, 0) scale(1);
+    transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
+  }
+  .info-popover::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 28px;
+    width: 10px; height: 10px;
+    background: #fff;
+    transform: rotate(45deg);
+    border-radius: 1px;
+  }
+  .info-popover table { width: 100%; border-collapse: collapse; }
+  .info-popover td {
+    padding: 5px 0;
+    font-size: 14px;
+    line-height: 1.5;
+    vertical-align: top;
+  }
+  .info-popover .ip-label { color: rgba(0,0,0,0.45); white-space: nowrap; padding-right: 14px; }
+  .info-popover .ip-content { color: rgb(31,35,41); }
+  .info-popover .ip-tag {
+    display: inline-block;
+    background-color: rgb(229,255,229);
+    color: rgb(0,100,0);
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 20px;
+    padding: 0 7px;
+  }
+
+  /* ===== Footer ===== */
+  .app-footer {
+    text-align: center;
+    background: rgb(74,0,0);
+    color: rgba(255,255,255,0.65);
+    padding: 18px 12px;
+    font-size: 14px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .app-footer a { color: inherit; }
+
+  /* ===== Login screen ===== */
+  .hidden { display: none !important; }
+  .login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: linear-gradient(135deg, rgb(93,0,0) 0%, rgb(107,0,0) 100%);
+  }
+  .login-card {
+    width: 100%;
+    max-width: 440px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+    padding: 32px 28px;
+  }
+  .login-brand { text-align: center; margin-bottom: 24px; }
+  .login-brand img { width: 160px; height: auto; display: inline-block; filter: brightness(0); }
+  .login-title { font-size: 22px; font-weight: 700; color: rgb(31,35,41); margin: 12px 0 2px; }
+  .login-sub { font-size: 14px; color: rgba(0,0,0,0.5); margin: 0; }
+  .login-form { display: flex; flex-direction: column; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 13px; font-weight: 600; color: rgb(31,35,41); }
+  .form-input, .form-select {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: rgb(31,35,41);
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    background: #fff;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: rgb(149,17,5);
+    box-shadow: 0 0 0 3px rgba(149,17,5,0.12);
+  }
+  .form-input.error, .form-select.error { border-color: #ff4d4f; }
+  .field-error { font-size: 12px; color: #ff4d4f; min-height: 16px; }
+  .form-row { display: flex; gap: 12px; }
+  .form-row .form-field { flex: 1; }
+  .avatar-upload { display: flex; align-items: center; gap: 14px; }
+  .avatar-preview {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f0f0f0;
+    border: 1px solid #d9d9d9;
+    flex: none;
+  }
+  .avatar-upload .upload-btn { flex: 1; position: relative; }
+  .avatar-upload .upload-btn input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .upload-placeholder {
+    display: flex; align-items: center; justify-content: center;
+    height: 40px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 8px;
+    color: rgba(0,0,0,0.45);
+    font-size: 13px;
+    text-align: center;
+  }
+  .upload-placeholder.error { border-color: #ff4d4f; }
+  .login-submit {
+    height: 44px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgb(93,0,0), rgb(107,0,0));
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .login-submit:hover { opacity: 0.92; }
+</style>
+</head>
+<body>
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-brand">
+        <img alt="logo" src="assets/logo.svg">
+        <h1 class="login-title">SCIE CMS</h1>
+        <p class="login-sub">Sign in with your student details</p>
+      </div>
+      <form class="login-form" id="loginForm" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label" for="enName">English Name</label>
+            <input class="form-input" id="enName" name="enName" type="text" placeholder="e.g. George">
+            <span class="field-error" id="err-enName"></span>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="zhName">Chinese Name</label>
+            <input class="form-input" id="zhName" name="zhName" type="text" placeholder="e.g. 帅哥">
+            <span class="field-error" id="err-zhName"></span>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="studentNo">Student Number</label>
+          <input class="form-input" id="studentNo" name="studentNo" type="text" placeholder="e.g. 24001">
+          <span class="field-error" id="err-studentNo"></span>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label" for="house">House</label>
+            <select class="form-select" id="house" name="house">
+              <option value="">Select house</option>
+              <option value="metal">Metal</option>
+              <option value="water">Water</option>
+              <option value="fire">Fire</option>
+              <option value="wood">Wood</option>
+            </select>
+            <span class="field-error" id="err-house"></span>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="grade">Grade</label>
+            <select class="form-select" id="grade" name="grade">
+              <option value="">Select grade</option>
+              <option value="g1">G1</option>
+              <option value="g2">G2</option>
+              <option value="a1">A1</option>
+              <option value="a2">A2</option>
+            </select>
+            <span class="field-error" id="err-grade"></span>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="classNo">Class Number</label>
+          <input class="form-input" id="classNo" name="classNo" type="text" inputmode="numeric" placeholder="e.g. 2">
+          <span class="field-error" id="err-classNo"></span>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Avatar Photo</label>
+          <div class="avatar-upload">
+            <img class="avatar-preview" id="avatarPreview" alt="Avatar preview">
+            <div class="upload-btn">
+              <div class="upload-placeholder" id="uploadPlaceholder">Choose a photo</div>
+              <input id="avatarInput" name="avatar" type="file" accept="image/*">
+            </div>
+          </div>
+          <span class="field-error" id="err-avatar"></span>
+        </div>
+        <button class="login-submit" type="submit">Continue</button>
+      </form>
+    </div>
+  </div>
+  <div class="app-layout hidden" id="mainApp">
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-wrap"><img alt="logo" src="assets/logo.svg"></div>
+      </div>
+      <div>
+        <button class="menu-btn" aria-label="Open navigation menu" type="button">
+          <span><svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M904 160H120c-4.4 0-8 3.6-8 8v64c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-64c0-4.4-3.6-8-8-8zm0 624H120c-4.4 0-8 3.6-8 8v64c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-64c0-4.4-3.6-8-8-8zm0-312H120c-4.4 0-8 3.6-8 8v64c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-64c0-4.4-3.6-8-8-8z"></path></svg></span>
+        </button>
+      </div>
+    </header>
+    <main class="app-main">
+      <div class="main-scroll">
+        <div class="main-center">
+          <div class="main-max">
+            <div class="space">
+              <div class="space-item">
+                <div class="collapse">
+                  <div class="collapse-item">
+                    <div class="collapse-header" role="button" tabindex="0">
+                      <span class="collapse-arrow"><svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"></path></svg></span>
+                      <span>Calendar</span>
+                    </div>
+                    <div class="collapse-content">Calendar content</div>
+                  </div>
+                  <div class="collapse-item">
+                    <div class="collapse-header" role="button" tabindex="0">
+                      <span class="collapse-arrow"><svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"></path></svg></span>
+                      <span>Daily Bulletin</span>
+                    </div>
+                    <div class="collapse-content">Daily Bulletin content</div>
+                  </div>
+                  <div class="collapse-item">
+                    <div class="collapse-header" role="button" tabindex="0">
+                      <span class="collapse-arrow"><svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"></path></svg></span>
+                      <span>Notice</span>
+                    </div>
+                    <div class="collapse-content">Notice content</div>
+                  </div>
+                </div>
+              </div>
+      <div class="space-item">
+        <div class="card">
+          <div class="card-head"><div class="card-head-wrapper"><div class="card-head-title">Student</div></div></div>
+          <div class="card-body">
+            <div class="func-grid">
+        <div class="func-cell">
+          <a href="/cms/surveys">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: rgb(22, 119, 255);">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M904 512h-56c-4.4 0-8 3.6-8 8v320H184V184h320c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V520c0-4.4-3.6-8-8-8z"></path>
+<path d="M355.9 534.9L354 653.8c-.1 8.9 7.1 16.2 16 16.2h.4l118-2.9c2-.1 4-.9 5.4-2.3l415.9-415c3.1-3.1 3.1-8.2 0-11.3L785.4 114.3c-1.6-1.6-3.6-2.3-5.7-2.3s-4.1.8-5.7 2.3l-415.8 415a8.3 8.3 0 00-2.3 5.6zm63.5 23.6L779.7 199l45.2 45.1-360.5 359.7-45.7 1.1.7-46.4z"></path></svg>
+                </span>
+                
+              </span>Survey
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/my/timetable">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 208H676V232h212v136zm0 224H676V432h212v160zM412 432h200v160H412V432zm200-64H412V232h200v136zm-476 64h212v160H136V432zm0-200h212v136H136V232zm0 424h212v136H136V656zm276 0h200v136H412V656zm476 136H676V656h212v136z"></path></svg>
+                </span>
+                
+              </span>Course Timetable
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/my/exam_timetable">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M912 192H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 284H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 284H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM104 228a56 56 0 10112 0 56 56 0 10-112 0zm0 284a56 56 0 10112 0 56 56 0 10-112 0zm0 284a56 56 0 10112 0 56 56 0 10-112 0z"></path></svg>
+                </span>
+                
+              </span>Exam Timetable
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/my/attendance">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"></path>
+<path d="M686.7 638.6L544.1 535.5V288c0-4.4-3.6-8-8-8H488c-4.4 0-8 3.6-8 8v275.4c0 2.6 1.2 5 3.3 6.5l165.4 120.6c3.6 2.6 8.6 1.8 11.2-1.7l28.6-39c2.6-3.7 1.8-8.7-1.8-11.2z"></path></svg>
+                </span>
+                
+              </span>Attendance
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/my/reports">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656zM492 400h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H492c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8zm0 144h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H492c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8zm0 144h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H492c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8zM340 368a40 40 0 1080 0 40 40 0 10-80 0zm0 144a40 40 0 1080 0 40 40 0 10-80 0zm0 144a40 40 0 1080 0 40 40 0 10-80 0z"></path></svg>
+                </span>
+                
+              </span>Report
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/my/assessments">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M464 512a48 48 0 1096 0 48 48 0 10-96 0zm200 0a48 48 0 1096 0 48 48 0 10-96 0zm-400 0a48 48 0 1096 0 48 48 0 10-96 0zm661.2-173.6c-22.6-53.7-55-101.9-96.3-143.3a444.35 444.35 0 00-143.3-96.3C630.6 75.7 572.2 64 512 64h-2c-60.6.3-119.3 12.3-174.5 35.9a445.35 445.35 0 00-142 96.5c-40.9 41.3-73 89.3-95.2 142.8-23 55.4-34.6 114.3-34.3 174.9A449.4 449.4 0 00112 714v152a46 46 0 0046 46h152.1A449.4 449.4 0 00510 960h2.1c59.9 0 118-11.6 172.7-34.3a444.48 444.48 0 00142.8-95.2c41.3-40.9 73.8-88.7 96.5-142 23.6-55.2 35.6-113.9 35.9-174.5.3-60.9-11.5-120-34.8-175.6zm-151.1 438C704 845.8 611 884 512 884h-1.7c-60.3-.3-120.2-15.3-173.1-43.5l-8.4-4.5H188V695.2l-4.5-8.4C155.3 633.9 140.3 574 140 513.7c-.4-99.7 37.7-193.3 107.6-263.8 69.8-70.5 163.1-109.5 262.8-109.9h1.7c50 0 98.5 9.7 144.2 28.9 44.6 18.7 84.6 45.6 119 80 34.3 34.3 61.3 74.4 80 119 19.4 46.2 29.1 95.2 28.9 145.8-.6 99.6-39.7 192.9-110.1 262.7z"></path></svg>
+                </span>
+                <span class="badge-count">4</span>
+              </span>Assessment
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/my/referral_comments">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M573 421c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40zm-280 0c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40z"></path>
+<path d="M894 345a343.92 343.92 0 00-189-130v.1c-17.1-19-36.4-36.5-58-52.1-163.7-119-393.5-82.7-513 81-96.3 133-92.2 311.9 6 439l.8 132.6c0 3.2.5 6.4 1.5 9.4a31.95 31.95 0 0040.1 20.9L309 806c33.5 11.9 68.1 18.7 102.5 20.6l-.5.4c89.1 64.9 205.9 84.4 313 49l127.1 41.4c3.2 1 6.5 1.6 9.9 1.6 17.7 0 32-14.3 32-32V753c88.1-119.6 90.4-284.9 1-408zM323 735l-12-5-99 31-1-104-8-9c-84.6-103.2-90.2-251.9-11-361 96.4-132.2 281.2-161.4 413-66 132.2 96.1 161.5 280.6 66 412-80.1 109.9-223.5 150.5-348 102zm505-17l-8 10 1 104-98-33-12 5c-56 20.8-115.7 22.5-171 7l-.2-.1A367.31 367.31 0 00729 676c76.4-105.3 88.8-237.6 44.4-350.4l.6.4c23 16.5 44.1 37.1 62 62 72.6 99.6 68.5 235.2-8 330z"></path>
+<path d="M433 421c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40z"></path></svg>
+                </span>
+                
+              </span>Referral Comment
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fformteachercomment%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M573 421c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40zm-280 0c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40z"></path>
+<path d="M894 345a343.92 343.92 0 00-189-130v.1c-17.1-19-36.4-36.5-58-52.1-163.7-119-393.5-82.7-513 81-96.3 133-92.2 311.9 6 439l.8 132.6c0 3.2.5 6.4 1.5 9.4a31.95 31.95 0 0040.1 20.9L309 806c33.5 11.9 68.1 18.7 102.5 20.6l-.5.4c89.1 64.9 205.9 84.4 313 49l127.1 41.4c3.2 1 6.5 1.6 9.9 1.6 17.7 0 32-14.3 32-32V753c88.1-119.6 90.4-284.9 1-408zM323 735l-12-5-99 31-1-104-8-9c-84.6-103.2-90.2-251.9-11-361 96.4-132.2 281.2-161.4 413-66 132.2 96.1 161.5 280.6 66 412-80.1 109.9-223.5 150.5-348 102zm505-17l-8 10 1 104-98-33-12 5c-56 20.8-115.7 22.5-171 7l-.2-.1A367.31 367.31 0 00729 676c76.4-105.3 88.8-237.6 44.4-350.4l.6.4c23 16.5 44.1 37.1 62 62 72.6 99.6 68.5 235.2-8 330z"></path>
+<path d="M433 421c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40z"></path></svg>
+                </span>
+                
+              </span>FT's message
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fmentoring%2Findex%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M908.1 353.1l-253.9-36.9L540.7 86.1c-3.1-6.3-8.2-11.4-14.5-14.5-15.8-7.8-35-1.3-42.9 14.5L369.8 316.2l-253.9 36.9c-7 1-13.4 4.3-18.3 9.3a32.05 32.05 0 00.6 45.3l183.7 179.1-43.4 252.9a31.95 31.95 0 0046.4 33.7L512 754l227.1 119.4c6.2 3.3 13.4 4.4 20.3 3.2 17.4-3 29.1-19.5 26.1-36.9l-43.4-252.9 183.7-179.1c5-4.9 8.3-11.3 9.3-18.3 2.7-17.5-9.5-33.7-27-36.3zM664.8 561.6l36.1 210.3L512 672.7 323.1 772l36.1-210.3-152.8-149L417.6 382 512 190.7 606.4 382l211.2 30.7-152.8 148.9z"></path></svg>
+                </span>
+                
+              </span>Mentoring
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/calendar">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z"></path></svg>
+                </span>
+                
+              </span>Calendar
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fsl_event%2Flist%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M888.3 693.2c-42.5-24.6-94.3-18-129.2 12.8l-53-30.7V523.6c0-15.7-8.4-30.3-22-38.1l-136-78.3v-67.1c44.2-15 76-56.8 76-106.1 0-61.9-50.1-112-112-112s-112 50.1-112 112c0 49.3 31.8 91.1 76 106.1v67.1l-136 78.3c-13.6 7.8-22 22.4-22 38.1v151.6l-53 30.7c-34.9-30.8-86.8-37.4-129.2-12.8-53.5 31-71.7 99.4-41 152.9 30.8 53.5 98.9 71.9 152.2 41 42.5-24.6 62.7-73 53.6-118.8l48.7-28.3 140.6 81c6.8 3.9 14.4 5.9 22 5.9s15.2-2 22-5.9L674.5 740l48.7 28.3c-9.1 45.7 11.2 94.2 53.6 118.8 53.3 30.9 121.5 12.6 152.2-41 30.8-53.6 12.6-122-40.7-152.9zm-673 138.4a47.6 47.6 0 01-65.2-17.6c-13.2-22.9-5.4-52.3 17.5-65.5a47.6 47.6 0 0165.2 17.6c13.2 22.9 5.4 52.3-17.5 65.5zM522 463.8zM464 234a48.01 48.01 0 0196 0 48.01 48.01 0 01-96 0zm170 446.2l-122 70.3-122-70.3V539.8l122-70.3 122 70.3v140.4zm239.9 133.9c-13.2 22.9-42.4 30.8-65.2 17.6-22.8-13.2-30.7-42.6-17.5-65.5s42.4-30.8 65.2-17.6c22.9 13.2 30.7 42.5 17.5 65.5z"></path></svg>
+                </span>
+                
+              </span>Events
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fecaclass%2Findex%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M632 888H392c-4.4 0-8 3.6-8 8v32c0 17.7 14.3 32 32 32h192c17.7 0 32-14.3 32-32v-32c0-4.4-3.6-8-8-8zM512 64c-181.1 0-328 146.9-328 328 0 121.4 66 227.4 164 284.1V792c0 17.7 14.3 32 32 32h264c17.7 0 32-14.3 32-32V676.1c98-56.7 164-162.7 164-284.1 0-181.1-146.9-328-328-328zm127.9 549.8L604 634.6V752H420V634.6l-35.9-20.8C305.4 568.3 256 484.5 256 392c0-141.4 114.6-256 256-256s256 114.6 256 256c0 92.5-49.4 176.3-128.1 221.8z"></path></svg>
+                </span>
+                
+              </span>ECA
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/achievement">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 632H136V232h752v560zM610.3 476h123.4c1.3 0 2.3-3.6 2.3-8v-48c0-4.4-1-8-2.3-8H610.3c-1.3 0-2.3 3.6-2.3 8v48c0 4.4 1 8 2.3 8zm4.8 144h185.7c3.9 0 7.1-3.6 7.1-8v-48c0-4.4-3.2-8-7.1-8H615.1c-3.9 0-7.1 3.6-7.1 8v48c0 4.4 3.2 8 7.1 8zM224 673h43.9c4.2 0 7.6-3.3 7.9-7.5 3.8-50.5 46-90.5 97.2-90.5s93.4 40 97.2 90.5c.3 4.2 3.7 7.5 7.9 7.5H522a8 8 0 008-8.4c-2.8-53.3-32-99.7-74.6-126.1a111.8 111.8 0 0029.1-75.5c0-61.9-49.9-112-111.4-112s-111.4 50.1-111.4 112c0 29.1 11 55.5 29.1 75.5a158.09 158.09 0 00-74.6 126.1c-.4 4.6 3.2 8.4 7.8 8.4zm149-262c28.5 0 51.7 23.3 51.7 52s-23.2 52-51.7 52-51.7-23.3-51.7-52 23.2-52 51.7-52z"></path></svg>
+                </span>
+                
+              </span>Achievement & GCA
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/students/homework/my">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M688 312v-48c0-4.4-3.6-8-8-8H296c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h384c4.4 0 8-3.6 8-8zm-392 88c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H296zm376 116c-119.3 0-216 96.7-216 216s96.7 216 216 216 216-96.7 216-216-96.7-216-216-216zm107.5 323.5C750.8 868.2 712.6 884 672 884s-78.8-15.8-107.5-44.5C535.8 810.8 520 772.6 520 732s15.8-78.8 44.5-107.5C593.2 595.8 631.4 580 672 580s78.8 15.8 107.5 44.5C808.2 653.2 824 691.4 824 732s-15.8 78.8-44.5 107.5zM761 656h-44.3c-2.6 0-5 1.2-6.5 3.3l-63.5 87.8-23.1-31.9a7.92 7.92 0 00-6.5-3.3H573c-6.5 0-10.3 7.4-6.5 12.7l73.8 102.1c3.2 4.4 9.7 4.4 12.9 0l114.2-158c3.9-5.3.1-12.7-6.4-12.7zM440 852H208V148h560v344c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V108c0-17.7-14.3-32-32-32H168c-17.7 0-32 14.3-32 32v784c0 17.7 14.3 32 32 32h272c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"></path></svg>
+                </span>
+                
+              </span>Homework
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Ffile%2Flist%2Fstudent%2F&no_user_prefix=1">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M854.6 288.6L639.4 73.4c-6-6-14.1-9.4-22.6-9.4H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V311.3c0-8.5-3.4-16.7-9.4-22.7zM790.2 326H602V137.8L790.2 326zm1.8 562H232V136h302v216a42 42 0 0042 42h216v494z"></path></svg>
+                </span>
+                
+              </span>Document
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fstudent_links%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M928 444H820V330.4c0-17.7-14.3-32-32-32H473L355.7 186.2a8.15 8.15 0 00-5.5-2.2H96c-17.7 0-32 14.3-32 32v592c0 17.7 14.3 32 32 32h698c13 0 24.8-7.9 29.7-20l134-332c1.5-3.8 2.3-7.9 2.3-12 0-17.7-14.3-32-32-32zM136 256h188.5l119.6 114.4H748V444H238c-13 0-24.8 7.9-29.7 20L136 643.2V256zm635.3 512H159l103.3-256h612.4L771.3 768z"></path></svg>
+                </span>
+                
+              </span>Resource
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fstudentleave%2Flist%2Fps%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M839.2 278.1a32 32 0 00-30.4-22.1H736V144c0-17.7-14.3-32-32-32H320c-17.7 0-32 14.3-32 32v112h-72.8a31.9 31.9 0 00-30.4 22.1L112 502v378c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V502l-72.8-223.9zM360 184h304v72H360v-72zm480 656H184V513.4L244.3 328h535.4L840 513.4V840zM652 572H544V464c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v108H372c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h108v108c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V636h108c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8z"></path></svg>
+                </span>
+                
+              </span>Leave
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fcourse%2Fselect%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h360c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H184V184h656v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V144c0-17.7-14.3-32-32-32zM653.3 599.4l52.2-52.2a8.01 8.01 0 00-4.7-13.6l-179.4-21c-5.1-.6-9.5 3.7-8.9 8.9l21 179.4c.8 6.6 8.9 9.4 13.6 4.7l52.4-52.4 256.2 256.2c3.1 3.1 8.2 3.1 11.3 0l42.4-42.4c3.1-3.1 3.1-8.2 0-11.3L653.3 599.4z"></path></svg>
+                </span>
+                
+              </span>Course Selection
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Finsurance%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M839.2 278.1a32 32 0 00-30.4-22.1H736V144c0-17.7-14.3-32-32-32H320c-17.7 0-32 14.3-32 32v112h-72.8a31.9 31.9 0 00-30.4 22.1L112 502v378c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V502l-72.8-223.9zM360 184h304v72H360v-72zm480 656H184V513.4L244.3 328h535.4L840 513.4V840zM652 572H544V464c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v108H372c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h108v108c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V636h108c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8z"></path></svg>
+                </span>
+                
+              </span>Insurance and Health
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Funiapp%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M433.1 657.7a31.8 31.8 0 0051.7 0l210.6-292c3.8-5.3 0-12.7-6.5-12.7H642c-10.2 0-19.9 4.9-25.9 13.3L459 584.3l-71.2-98.8c-6-8.3-15.6-13.3-25.9-13.3H315c-6.5 0-10.3 7.4-6.5 12.7l124.6 172.8z"></path>
+<path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z"></path></svg>
+                </span>
+                
+              </span>University Application
+            </div>
+          </a>
+        </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="space-item">
+        <div class="card">
+          <div class="card-head"><div class="card-head-wrapper"><div class="card-head-title">EAO</div></div></div>
+          <div class="card-body">
+            <div class="func-grid">
+        <div class="func-cell">
+          <a href="/cms/students/result-services">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: rgb(107, 0, 0);">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M688 312v-48c0-4.4-3.6-8-8-8H296c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h384c4.4 0 8-3.6 8-8zm-392 88c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H296zm376 116c-119.3 0-216 96.7-216 216s96.7 216 216 216 216-96.7 216-216-96.7-216-216-216zm107.5 323.5C750.8 868.2 712.6 884 672 884s-78.8-15.8-107.5-44.5C535.8 810.8 520 772.6 520 732s15.8-78.8 44.5-107.5C593.2 595.8 631.4 580 672 580s78.8 15.8 107.5 44.5C808.2 653.2 824 691.4 824 732s-15.8 78.8-44.5 107.5zM761 656h-44.3c-2.6 0-5 1.2-6.5 3.3l-63.5 87.8-23.1-31.9a7.92 7.92 0 00-6.5-3.3H573c-6.5 0-10.3 7.4-6.5 12.7l73.8 102.1c3.2 4.4 9.7 4.4 12.9 0l114.2-158c3.9-5.3.1-12.7-6.4-12.7zM440 852H208V148h560v344c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V108c0-17.7-14.3-32-32-32H168c-17.7 0-32 14.3-32 32v784c0 17.7 14.3 32 32 32h272c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"></path></svg>
+                </span>
+                
+              </span>Result Services
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fticket%2FTicketCertificate%2Flist%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M854.6 288.6L639.4 73.4c-6-6-14.1-9.4-22.6-9.4H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V311.3c0-8.5-3.4-16.7-9.4-22.7zM790.2 326H602V137.8L790.2 326zm1.8 562H232V136h302v216a42 42 0 0042 42h216v494zM504 618H320c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zM312 490v48c0 4.4 3.6 8 8 8h384c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H320c-4.4 0-8 3.6-8 8z"></path></svg>
+                </span>
+                
+              </span>Certification Request
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Freport%2Fcie_statement_self%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M257.7 752c2 0 4-.2 6-.5L431.9 722c2-.4 3.9-1.3 5.3-2.8l423.9-423.9a9.96 9.96 0 000-14.1L694.9 114.9c-1.9-1.9-4.4-2.9-7.1-2.9s-5.2 1-7.1 2.9L256.8 538.8c-1.5 1.5-2.4 3.3-2.8 5.3l-29.5 168.2a33.5 33.5 0 009.4 29.8c6.6 6.4 14.9 9.9 23.8 9.9zm67.4-174.4L687.8 215l73.3 73.3-362.7 362.6-88.9 15.7 15.6-89zM880 836H144c-17.7 0-32 14.3-32 32v36c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-36c0-17.7-14.3-32-32-32z"></path></svg>
+                </span>
+                
+              </span>Exam Entry
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fstudent_idcard_upload%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 632H136V232h752v560zM610.3 476h123.4c1.3 0 2.3-3.6 2.3-8v-48c0-4.4-1-8-2.3-8H610.3c-1.3 0-2.3 3.6-2.3 8v48c0 4.4 1 8 2.3 8zm4.8 144h185.7c3.9 0 7.1-3.6 7.1-8v-48c0-4.4-3.2-8-7.1-8H615.1c-3.9 0-7.1 3.6-7.1 8v48c0 4.4 3.2 8 7.1 8zM224 673h43.9c4.2 0 7.6-3.3 7.9-7.5 3.8-50.5 46-90.5 97.2-90.5s93.4 40 97.2 90.5c.3 4.2 3.7 7.5 7.9 7.5H522a8 8 0 008-8.4c-2.8-53.3-32-99.7-74.6-126.1a111.8 111.8 0 0029.1-75.5c0-61.9-49.9-112-111.4-112s-111.4 50.1-111.4 112c0 29.1 11 55.5 29.1 75.5a158.09 158.09 0 00-74.6 126.1c-.4 4.6 3.2 8.4 7.8 8.4zm149-262c28.5 0 51.7 23.3 51.7 52s-23.2 52-51.7 52-51.7-23.3-51.7-52 23.2-52 51.7-52z"></path></svg>
+                </span>
+                
+              </span>Identity Card
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fuser%2Fjump_into_internal%2Fecontract%3Alist%2F&no_user_prefix=1">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M644.7 669.2a7.92 7.92 0 00-6.5-3.3H594c-6.5 0-10.3 7.4-6.5 12.7l73.8 102.1c3.2 4.4 9.7 4.4 12.9 0l114.2-158c3.8-5.3 0-12.7-6.5-12.7h-44.3c-2.6 0-5 1.2-6.5 3.3l-63.5 87.8-22.9-31.9zM688 306v-48c0-4.4-3.6-8-8-8H296c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h384c4.4 0 8-3.6 8-8zm-392 88c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H296zm184 458H208V148h560v296c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V108c0-17.7-14.3-32-32-32H168c-17.7 0-32 14.3-32 32v784c0 17.7 14.3 32 32 32h312c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm402.6-320.8l-192-66.7c-.9-.3-1.7-.4-2.6-.4s-1.8.1-2.6.4l-192 66.7a7.96 7.96 0 00-5.4 7.5v251.1c0 2.5 1.1 4.8 3.1 6.3l192 150.2c1.4 1.1 3.2 1.7 4.9 1.7s3.5-.6 4.9-1.7l192-150.2c1.9-1.5 3.1-3.8 3.1-6.3V538.7c0-3.4-2.2-6.4-5.4-7.5zM826 763.7L688 871.6 550 763.7V577l138-48 138 48v186.7z"></path></svg>
+                </span>
+                
+              </span>E-Agreement
+            </div>
+          </a>
+        </div>
+        <div class="func-cell">
+          <a href="/cms/legacy-redirect?href=%2Fspecial_consideration%2F">
+            <div class="func-inner">
+              <span class="badge">
+                <span class="avatar" style="background-color: maroon;">
+                  <svg viewBox="64 64 896 896" focusable="false" width="1em" height="1em" fill="currentColor" aria-hidden="true" style=""><path d="M742 318V184h86c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h86v134c0 81.5 42.4 153.2 106.4 194-64 40.8-106.4 112.5-106.4 194v134h-86c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h632c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8h-86V706c0-81.5-42.4-153.2-106.4-194 64-40.8 106.4-112.5 106.4-194zm-72 388v134H354V706c0-42.2 16.4-81.9 46.3-111.7C430.1 564.4 469.8 548 512 548s81.9 16.4 111.7 46.3C653.6 624.1 670 663.8 670 706zm0-388c0 42.2-16.4 81.9-46.3 111.7C593.9 459.6 554.2 476 512 476s-81.9-16.4-111.7-46.3A156.63 156.63 0 01354 318V184h316v134z"></path></svg>
+                </span>
+                
+              </span>Special Consideration
+            </div>
+          </a>
+        </div>
+            </div>
+          </div>
+        </div>
+      </div>
+              <div class="space-item">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="welcome-body">
+                      <div class="welcome-col">
+                        <span class="welcome-title" id="welcomeName">Welcome, George</span>
+                        <span class="info-popover-wrap">
+                          <button class="link-btn" id="showInfoBtn" type="button">Show Student Info</button>
+                          <div class="info-popover" id="studentInfoPopover" role="tooltip">
+                            <table>
+                              <tbody>
+                                <tr><td class="ip-label">Chinese Name</td><td class="ip-content" id="infoChineseName">帅哥</td></tr>
+                                <tr><td class="ip-label">Student ID</td><td class="ip-content" id="infoStudentId">24xxx</td></tr>
+                                <tr><td class="ip-label">Form Group</td><td class="ip-content" id="infoFormGroup">AX.MetalX</td></tr>
+                                <tr><td class="ip-label">Status</td><td class="ip-content"><span class="ip-tag">Enrolled</span></td></tr>
+                                <tr><td class="ip-label">Boarding</td><td class="ip-content">Day Student</td></tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </span>
+                        <a href="/cms/auth/change_password">Change Password</a>
+                        <a href="#" style="color: rgb(149,17,5);">Log out</a>
+                      </div>
+                      <div><img class="avatar-photo" id="userAvatar" alt="User profile photo" src="assets/avatar.jpg"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="app-footer">Copyright © Since 2003 Shenzhen College of International Education <a href="https://beian.miit.gov.cn/" rel="noopener noreferrer" target="_blank">粤ICP备16068108号</a></footer>
+  </div>
+<script>
+  // ===== Login form =====
+  var loginForm = document.getElementById('loginForm');
+  var loginScreen = document.getElementById('loginScreen');
+  var mainApp = document.getElementById('mainApp');
+  var avatarInput = document.getElementById('avatarInput');
+  var avatarPreview = document.getElementById('avatarPreview');
+  var uploadPlaceholder = document.getElementById('uploadPlaceholder');
+  var avatarDataUrl = '';
+
+  function setFieldError(inputId, errorId, message) {
+    var input = document.getElementById(inputId);
+    var err = document.getElementById(errorId);
+    if (input) input.classList.toggle('error', !!message);
+    if (err) err.textContent = message || '';
+    if (errorId === 'err-avatar' && uploadPlaceholder) {
+      uploadPlaceholder.classList.toggle('error', !!message);
+    }
+  }
+
+  avatarInput.addEventListener('change', function() {
+    var file = avatarInput.files && avatarInput.files[0];
+    if (file && file.type.indexOf('image/') === 0) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        avatarDataUrl = e.target.result;
+        avatarPreview.src = avatarDataUrl;
+      };
+      reader.readAsDataURL(file);
+      uploadPlaceholder.textContent = file.name;
+      setFieldError('avatarInput', 'err-avatar', '');
+    } else {
+      avatarDataUrl = '';
+      avatarPreview.removeAttribute('src');
+      uploadPlaceholder.textContent = 'Choose a photo';
+      setFieldError('avatarInput', 'err-avatar', 'Please choose an image file.');
+    }
+  });
+
+  loginForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var enName = document.getElementById('enName').value.trim();
+    var zhName = document.getElementById('zhName').value.trim();
+    var studentNo = document.getElementById('studentNo').value.trim();
+    var house = document.getElementById('house').value;
+    var grade = document.getElementById('grade').value;
+    var classNo = document.getElementById('classNo').value.trim();
+    var file = avatarInput.files && avatarInput.files[0];
+
+    var valid = true;
+
+    if (!enName) {
+      setFieldError('enName', 'err-enName', 'English name is required.');
+      valid = false;
+    } else if (!/^[A-Za-z][A-Za-z\s.'-]*$/.test(enName)) {
+      setFieldError('enName', 'err-enName', 'Use letters, spaces, hyphens or apostrophes only.');
+      valid = false;
+    } else {
+      setFieldError('enName', 'err-enName', '');
+    }
+
+    if (!zhName) {
+      setFieldError('zhName', 'err-zhName', 'Chinese name is required.');
+      valid = false;
+    } else {
+      setFieldError('zhName', 'err-zhName', '');
+    }
+
+    if (!studentNo) {
+      setFieldError('studentNo', 'err-studentNo', 'Student number is required.');
+      valid = false;
+    } else if (!/^[A-Za-z0-9]+$/.test(studentNo)) {
+      setFieldError('studentNo', 'err-studentNo', 'Use letters and numbers only.');
+      valid = false;
+    } else {
+      setFieldError('studentNo', 'err-studentNo', '');
+    }
+
+    if (!house) {
+      setFieldError('house', 'err-house', 'Select a house.');
+      valid = false;
+    } else {
+      setFieldError('house', 'err-house', '');
+    }
+
+    if (!grade) {
+      setFieldError('grade', 'err-grade', 'Select a grade.');
+      valid = false;
+    } else {
+      setFieldError('grade', 'err-grade', '');
+    }
+
+    if (!classNo) {
+      setFieldError('classNo', 'err-classNo', 'Class number is required.');
+      valid = false;
+    } else if (!/^\d+$/.test(classNo)) {
+      setFieldError('classNo', 'err-classNo', 'Class number must be a positive integer.');
+      valid = false;
+    } else {
+      setFieldError('classNo', 'err-classNo', '');
+    }
+
+    if (!file || file.type.indexOf('image/') !== 0) {
+      setFieldError('avatarInput', 'err-avatar', 'Please upload an avatar photo.');
+      valid = false;
+    } else {
+      setFieldError('avatarInput', 'err-avatar', '');
+    }
+
+    if (!valid) return;
+
+    function populate() {
+      var capitalize = function(s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+      var formGroup = grade.toUpperCase() + '.' + capitalize(house) + classNo;
+
+      document.getElementById('welcomeName').textContent = 'Welcome, ' + enName;
+      document.getElementById('infoChineseName').textContent = zhName;
+      document.getElementById('infoStudentId').textContent = studentNo;
+      document.getElementById('infoFormGroup').textContent = formGroup;
+      document.getElementById('userAvatar').src = avatarDataUrl;
+
+      loginScreen.classList.add('hidden');
+      mainApp.classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    if (avatarDataUrl) {
+      populate();
+    } else {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        avatarDataUrl = e.target.result;
+        populate();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  document.querySelectorAll('.collapse-header').forEach(function(h) {
+    h.addEventListener('click', function() {
+      h.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Student info popover
+  var infoBtn = document.getElementById('showInfoBtn');
+  var infoPop = document.getElementById('studentInfoPopover');
+  if (infoBtn && infoPop) {
+    infoBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      infoPop.classList.toggle('open');
+    });
+    document.addEventListener('click', function(e) {
+      if (!infoPop.contains(e.target) && e.target !== infoBtn) {
+        infoPop.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') infoPop.classList.remove('open');
+    });
+  }
+</script>
+</body>
+</html>
