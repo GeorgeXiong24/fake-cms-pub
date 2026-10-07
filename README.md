@@ -45,3 +45,9 @@ To make the flow work properly, fill in the login form with:
 
 The form group shown in the main UI is generated automatically from these
 values in the format `Grade.House + ClassNumber`.
+
+## Further improvements
+
+- **Add the timetable section in the main ui with randomly generated lessons.**
+- **Re-check the real cms platform to ensure there is no other ways to verify the authenticity of the website & user id.**
+- **Ensure the ui shape and color match that of the real webpage exactly.**
