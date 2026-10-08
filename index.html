@@ -272,6 +272,13 @@
     text-align: center;
   }
   .upload-placeholder.error { border-color: #ff4d4f; }
+  .info-upload { position: relative; }
+  .info-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
   .login-submit {
     height: 44px;
     border: none;
@@ -295,6 +302,14 @@
         <p class="login-sub">Sign in with your student details</p>
       </div>
       <form class="login-form" id="loginForm" novalidate>
+        <div class="form-field">
+          <label class="form-label">Auto-fill details</label>
+          <div class="info-upload">
+            <div class="upload-placeholder" id="infoUploadPlaceholder">Upload a .txt file to fill in the details below (photo still required)</div>
+            <input id="infoFileInput" name="infoFile" type="file" accept=".txt,text/plain">
+          </div>
+          <span class="field-error" id="err-infoFile"></span>
+        </div>
         <div class="form-row">
           <div class="form-field">
             <label class="form-label" for="enName">English Name</label>
@@ -777,6 +792,8 @@
   var avatarInput = document.getElementById('avatarInput');
   var avatarPreview = document.getElementById('avatarPreview');
   var uploadPlaceholder = document.getElementById('uploadPlaceholder');
+  var infoFileInput = document.getElementById('infoFileInput');
+  var infoUploadPlaceholder = document.getElementById('infoUploadPlaceholder');
   var avatarDataUrl = '';
 
   function setFieldError(inputId, errorId, message) {
@@ -786,6 +803,9 @@
     if (err) err.textContent = message || '';
     if (errorId === 'err-avatar' && uploadPlaceholder) {
       uploadPlaceholder.classList.toggle('error', !!message);
+    }
+    if (errorId === 'err-infoFile' && infoUploadPlaceholder) {
+      infoUploadPlaceholder.classList.toggle('error', !!message);
     }
   }
 
@@ -806,6 +826,56 @@
       uploadPlaceholder.textContent = 'Choose a photo';
       setFieldError('avatarInput', 'err-avatar', 'Please choose an image file.');
     }
+  });
+
+  infoFileInput.addEventListener('change', function() {
+    var file = infoFileInput.files && infoFileInput.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var text = String(e.target.result || '');
+      var lines = text.split(/\r?\n/).map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+
+      if (lines.length < 6) {
+        setFieldError('infoFileInput', 'err-infoFile', 'File must have 6 lines: English name, Chinese name, student number, house, grade, class.');
+        return;
+      }
+
+      var houseMap = { metal: 'metal', water: 'water', fire: 'fire', wood: 'wood' };
+      var gradeMap = { g1: 'g1', g2: 'g2', a1: 'a1', a2: 'a2' };
+      var enName = lines[0];
+      var zhName = lines[1];
+      var studentNo = lines[2];
+      var house = houseMap[lines[3].toLowerCase()];
+      var grade = gradeMap[lines[4].toLowerCase()];
+      var classNo = lines[5];
+
+      if (!house || !grade) {
+        setFieldError('infoFileInput', 'err-infoFile', 'Could not recognize the house or grade in the file.');
+        return;
+      }
+
+      document.getElementById('enName').value = enName;
+      document.getElementById('zhName').value = zhName;
+      document.getElementById('studentNo').value = studentNo;
+      document.getElementById('house').value = house;
+      document.getElementById('grade').value = grade;
+      document.getElementById('classNo').value = classNo;
+
+      setFieldError('enName', 'err-enName', '');
+      setFieldError('zhName', 'err-zhName', '');
+      setFieldError('studentNo', 'err-studentNo', '');
+      setFieldError('house', 'err-house', '');
+      setFieldError('grade', 'err-grade', '');
+      setFieldError('classNo', 'err-classNo', '');
+      setFieldError('infoFileInput', 'err-infoFile', '');
+      infoUploadPlaceholder.textContent = file.name;
+    };
+    reader.onerror = function() {
+      setFieldError('infoFileInput', 'err-infoFile', 'Could not read the file.');
+    };
+    reader.readAsText(file);
   });
 
   loginForm.addEventListener('submit', function(e) {

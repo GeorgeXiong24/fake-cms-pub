@@ -46,6 +46,31 @@ To make the flow work properly, fill in the login form with:
 The form group shown in the main UI is generated automatically from these
 values in the format `Grade.House + ClassNumber`.
 
+## Quick-fill from a `.txt` file
+
+The login screen lets you upload a `.txt` file to auto-fill the text fields
+(the avatar photo must still be chosen separately). The file must contain
+exactly one value per line, in this order:
+
+1. English Name
+2. Chinese Name
+3. Student Number
+4. House (`Metal`, `Water`, `Fire` or `Wood`)
+5. Grade (`G1`, `G2`, `A1` or `A2`)
+6. Class Number
+
+Empty lines are ignored, and the House/Grade values are matched
+case-insensitively. For example, a file with these six lines:
+
+```text
+George
+帅哥
+24001
+Metal
+A3
+2
+```
+
 ## Further improvements
 
 - **Add the timetable section in the main ui with randomly generated lessons.**
