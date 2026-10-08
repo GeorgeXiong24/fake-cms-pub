@@ -12,6 +12,9 @@ A front-end imitation of the SCIE CMS website (https://cms.alevel.com.cn/).
 A single-page static HTML imitation of the SCIE CMS homepage. It recreates the
 overall look, layout and basic interactions of the original site.
 
+The page ratio and layout arrangement are originally designed for mobile
+phones, especially iPhone.
+
 ## Currently completed features
 
 - **Login screen** shown before the main UI, with:
@@ -19,6 +22,7 @@ overall look, layout and basic interactions of the original site.
   - House selector (Metal / Water / Fire / Wood)
   - Grade selector (G1 / G2 / A1 / A2)
   - Class number
+  - Personal email and mobile number
   - Avatar photo upload with live preview
 - **Input validation** — required fields are checked, and inline error messages
   are shown when something is missing or invalid.
@@ -41,6 +45,8 @@ To make the flow work properly, fill in the login form with:
 - **House** — one of Metal, Water, Fire, Wood
 - **Grade** — one of G1, G2, A1, A2
 - **Class Number** — a positive integer
+- **Personal Email**
+- **Mobile Number** — an 11-digit number
 - **Avatar Photo** — an image file
 
 The form group shown in the main UI is generated automatically from these
@@ -58,6 +64,8 @@ exactly one value per line, in this order:
 4. House (`Metal`, `Water`, `Fire` or `Wood`)
 5. Grade (`G1`, `G2`, `A1` or `A2`)
 6. Class Number
+7. Personal email address (not school email)
+8. Mobile number
 
 Empty lines are ignored, and the House/Grade values are matched
 case-insensitively. For example, a file with these six lines:
@@ -69,10 +77,11 @@ George
 Metal
 A3
 2
+[Personal email address]
+[Mobile number]
 ```
 
 ## Further improvements
 
 - **Add the timetable section in the main ui with randomly generated lessons.**
-- **Re-check the real cms platform to ensure there is no other ways to verify the authenticity of the website & user id.**
 - **Ensure the ui shape and color match that of the real webpage exactly.**

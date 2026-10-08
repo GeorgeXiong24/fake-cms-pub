@@ -279,6 +279,14 @@
     opacity: 0;
     cursor: pointer;
   }
+  #infoUploadPlaceholder {
+    flex-direction: column;
+    height: auto;
+    min-height: 40px;
+    padding: 6px 12px;
+    line-height: 1.4;
+    gap: 2px;
+  }
   .login-submit {
     height: 44px;
     border: none;
@@ -305,7 +313,7 @@
         <div class="form-field">
           <label class="form-label">Auto-fill details</label>
           <div class="info-upload">
-            <div class="upload-placeholder" id="infoUploadPlaceholder">Upload a .txt file to fill in the details below (photo still required)</div>
+            <div class="upload-placeholder" id="infoUploadPlaceholder"><span>Upload a .txt file to auto-fill in the details below</span><span>(photo still required)</span></div>
             <input id="infoFileInput" name="infoFile" type="file" accept=".txt,text/plain">
           </div>
           <span class="field-error" id="err-infoFile"></span>
@@ -352,9 +360,19 @@
           </div>
         </div>
         <div class="form-field">
-          <label class="form-label" for="classNo">Class Number</label>
+          <label class="form-label" for="classNo">Form Class Number</label>
           <input class="form-input" id="classNo" name="classNo" type="text" inputmode="numeric" placeholder="e.g. 2">
           <span class="field-error" id="err-classNo"></span>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="email">Personal Email</label>
+          <input class="form-input" id="email" name="email" type="email">
+          <span class="field-error" id="err-email"></span>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="mobile">Mobile Number</label>
+          <input class="form-input" id="mobile" name="mobile" type="tel" inputmode="numeric">
+          <span class="field-error" id="err-mobile"></span>
         </div>
         <div class="form-field">
           <label class="form-label">Avatar Photo</label>
@@ -837,8 +855,8 @@
       var text = String(e.target.result || '');
       var lines = text.split(/\r?\n/).map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
 
-      if (lines.length < 6) {
-        setFieldError('infoFileInput', 'err-infoFile', 'File must have 6 lines: English name, Chinese name, student number, house, grade, class.');
+      if (lines.length < 8) {
+        setFieldError('infoFileInput', 'err-infoFile', 'File must have 8 lines: English name, Chinese name, student number, house, grade, class, email, mobile.');
         return;
       }
 
@@ -850,6 +868,8 @@
       var house = houseMap[lines[3].toLowerCase()];
       var grade = gradeMap[lines[4].toLowerCase()];
       var classNo = lines[5];
+      var email = lines[6];
+      var mobile = lines[7];
 
       if (!house || !grade) {
         setFieldError('infoFileInput', 'err-infoFile', 'Could not recognize the house or grade in the file.');
@@ -862,6 +882,8 @@
       document.getElementById('house').value = house;
       document.getElementById('grade').value = grade;
       document.getElementById('classNo').value = classNo;
+      document.getElementById('email').value = email;
+      document.getElementById('mobile').value = mobile;
 
       setFieldError('enName', 'err-enName', '');
       setFieldError('zhName', 'err-zhName', '');
@@ -869,6 +891,8 @@
       setFieldError('house', 'err-house', '');
       setFieldError('grade', 'err-grade', '');
       setFieldError('classNo', 'err-classNo', '');
+      setFieldError('email', 'err-email', '');
+      setFieldError('mobile', 'err-mobile', '');
       setFieldError('infoFileInput', 'err-infoFile', '');
       infoUploadPlaceholder.textContent = file.name;
     };
@@ -887,6 +911,8 @@
     var house = document.getElementById('house').value;
     var grade = document.getElementById('grade').value;
     var classNo = document.getElementById('classNo').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var mobile = document.getElementById('mobile').value.trim();
     var file = avatarInput.files && avatarInput.files[0];
 
     var valid = true;
@@ -940,6 +966,26 @@
       valid = false;
     } else {
       setFieldError('classNo', 'err-classNo', '');
+    }
+
+    if (!email) {
+      setFieldError('email', 'err-email', 'Email is required.');
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setFieldError('email', 'err-email', 'Enter a valid email address.');
+      valid = false;
+    } else {
+      setFieldError('email', 'err-email', '');
+    }
+
+    if (!mobile) {
+      setFieldError('mobile', 'err-mobile', 'Mobile number is required.');
+      valid = false;
+    } else if (!/^1[3-9]\d{9}$/.test(mobile)) {
+      setFieldError('mobile', 'err-mobile', 'Enter a valid 11-digit mobile number starting with 1.');
+      valid = false;
+    } else {
+      setFieldError('mobile', 'err-mobile', '');
     }
 
     if (!file || file.type.indexOf('image/') !== 0) {
