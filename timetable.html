@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCIE</title>
+<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.28.2/dist/index.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; overflow-x: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 14px;
+    color: #1F2329;
+    background: #F1F4F8;
+  }
+  a { text-decoration: none; }
+  /* 点击按钮时去掉浏览器默认的蓝色高亮/焦点框 */
+  button:focus { outline: none; }
+  button:focus-visible { outline: 2px solid rgba(149,17,5,0.6); outline-offset: 2px; }
+
+  /* Whole page is a fixed 992px desktop design, scaled to fit viewport */
+  #page { width: 992px; transform-origin: top left; }
+
+  /* ===== Header ===== */
+  .app-header {
+    height: 72px;
+    padding: 0 24px;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    background: linear-gradient(135deg, #5D0000 0%, #6B0000 100%);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .logo { width: 180px; display: block; filter: brightness(0) invert(1); }
+  .menu { display: flex; list-style: none; margin: 0; padding: 0; gap: 12px; align-self: stretch; }
+  .menu li { display: flex; }
+  .menu a {
+    display: flex; align-items: center; padding: 8px 12px;
+    color: #F0E6E6; font-size: 15px; font-weight: 500;
+    white-space: nowrap;
+  }
+  .menu .active a { color: #F0E6E6; font-weight: 600; background: #820014; }
+  .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .header-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; border: none; cursor: pointer;
+    color: #fff; font-size: 14px; font-family: inherit;
+    padding: 6px 10px; border-radius: 6px;
+  }
+  .header-btn:hover { background: rgba(255,255,255,0.12); }
+  .account-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px;
+  }
+
+  /* ===== Layout ===== */
+  .content { background: #F1F4F8; padding: 0 24px 24px; }
+  .breadcrumb { margin: 16px 0 14px; font-size: 14px; color: rgba(0,0,0,0.45); line-height: 22px; }
+  .breadcrumb a { color: #951105; font-weight: 700; }
+  .breadcrumb .sep { margin: 0 6px; color: rgba(0,0,0,0.45); }
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* ===== Card ===== */
+  .card { background: #fff; border: 1px solid #E8ECF2; border-radius: 12px; }
+  .card.full { grid-column: 1 / -1; }
+  .card-head {
+    min-height: 38px; display: flex; align-items: center;
+    padding: 0 12px; border-bottom: 1px solid #E8ECF2;
+  }
+  .card-head-title { font-size: 14px; font-weight: 600; color: #1F2329; white-space: nowrap; }
+  .card-body { padding: 12px; }
+  .card-body.listless { padding: 0; }
+
+  /* ===== Student info ===== */
+  .student-summary { display: flex; align-items: flex-start; }
+  .student-avatar {
+    width: 64px; aspect-ratio: 50 / 69; flex: none;
+    margin-right: 60px;
+    background: #f0f0f0; border: 1px solid #d9d9d9;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; color: #666; font-weight: 600; font-size: 20px;
+  }
+  .student-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .student-info {
+    display: grid;
+    grid-template-columns: auto auto;
+    column-gap: 90px;
+    align-content: space-between;
+    align-items: start;
+    justify-items: start;
+    height: calc(64px * 69 / 50);
+    font-size: 14px;
+    line-height: 1;
+  }
+  .tag {
+    display: inline-block; border-radius: 6px; font-size: 12px;
+    line-height: 14px; padding: 0 6px; width: max-content;
+  }
+  .tag-id { background: #FEE8E6; color: #951105; font-weight: 300; }
+  .tag-enrolled { background: #E5FFE5; color: darkgreen; }
+  .name-en { color: #1F2329; font-weight: 600; }
+  .name-zh { color: #1F2329; }
+  .name-pinyin { color: rgba(0,0,0,0.45); }
+  .enroll-line { color: #1F2329; }
+
+  /* ===== Collapse ===== */
+  .collapse { border-top: 1px solid #F0F0F0; margin-top: 12px; }
+  .collapse-header {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    background: none; border: none; cursor: pointer;
+    padding: 8px 0; font-size: 14px; color: #1F2329;
+    text-align: left; font-family: inherit;
+  }
+  .collapse-header.dropped { padding: 8px 12px 8px 8px; border-top: none; }
+  #moreInfoCollapse { border-top: none; }
+  #moreInfoCollapse .collapse-header {
+    background: #fafafa;
+    border: 1px solid #d9d9d9;
+    border-radius: 12px;
+    padding: 6px 8px 6px 4px;
+  }
+  #moreInfoCollapse .more-info-title { font-size: 12px; color: #1F2329; }
+  .collapse-arrow { display: inline-flex; transition: transform 0.2s; color: rgba(0,0,0,0.45); }
+  .collapse.open .collapse-arrow { transform: rotate(90deg); }
+  .collapse-content {
+    overflow: hidden; max-height: 0; opacity: 0; padding-top: 8px;
+    transition: max-height 0.2s ease, opacity 0.2s ease;
+  }
+  .collapse.open .collapse-content { opacity: 1; }
+  .dropped-title { font-weight: 600; color: #951105; }
+
+  /* ===== Descriptions ===== */
+  .desc-table { width: 100%; border-collapse: collapse; }
+  .desc-table td { padding: 0 0 9px 0; font-size: 12px; line-height: 20px; }
+  .desc-label { color: rgba(0,0,0,0.45); }
+  .desc-label::after { content: ':'; position: relative; top: -0.5px; margin: 0 4px 0 2px; }
+  .desc-value { color: #1F2329; }
+
+  /* ===== Nav tabs ===== */
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tab {
+    font-size: 13px; font-weight: 600; line-height: 1.35;
+    min-height: 40px; padding: 7px 12px; border-radius: 10px;
+    max-width: 160px; transition: 0.18s; cursor: pointer;
+    border: 1px solid #E8ECF2; background: #fff; color: #1F2329;
+    box-shadow: rgba(15,23,42,0.05) 0 1px 2px 0;
+    font-family: inherit;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #951105 0%, #820014 100%);
+    color: #fff; border: 1px solid transparent;
+    box-shadow: rgba(130,0,20,0.14) 0 6px 14px;
+    transform: translateY(-1px);
+  }
+
+  /* ===== Timetable controls ===== */
+  .tt-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; position: relative; }
+  .tt-label { font-size: 14px; color: #1F2329; }
+  .tt-select, .tt-date {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 36px; padding: 0 12px; border: 1px solid #d9d9d9;
+    border-radius: 10px; background: #fff; font-size: 14px; color: #1F2329;
+  }
+  .tt-week { font-size: 14px; color: #1F2329; position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+  .tt-week .red { color: #951105; font-weight: 700; }
+  .tt-date { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+
+  /* ===== Timetable grid ===== */
+  .tt-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+  .tt-table th, .tt-table td { border-right: 1px solid #000; border-bottom: 1px solid #000; }
+  .tt-table th:first-child, .tt-table td:first-child { border-left: 1px solid #000; }
+  .tt-table thead th {
+    background: #F8FAFC; color: #1F2329; font-weight: 500;
+    font-size: 12px; padding: 7px 4px; text-align: left; border-top: 1px solid #000;
+  }
+  .tt-table thead th:first-child { border-top-left-radius: 8px; }
+  .tt-table thead th:last-child { border-top-right-radius: 8px; }
+  .tt-table tbody tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+  .tt-table tbody tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+  .day-wrap { display: flex; align-items: center; gap: 8px; }
+  .day-name { font-weight: 500; }
+  .day-date { color: rgba(0,0,0,0.45); font-weight: 500; }
+  .tt-period-label { font-size: 12px; padding: 4px; text-align: left; vertical-align: top; line-height: 20px; }
+  .period-name { font-weight: 500; color: #1F2329; }
+  .period-time { color: rgba(0,0,0,0.45); font-weight: 500; }
+  .tt-cell { position: relative; padding: 4px; font-size: 12px; vertical-align: top; }
+  .tt-cell-body { min-height: 40px; display: flex; align-items: center; }
+  .tt-cell-inner { width: 100%; line-height: 20px; }
+  .tt-subject { color: #951105; }
+  .tt-meta { color: #1F2329; }
+  .tt-period { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #999; }
+
+  /* ===== Summary ===== */
+  .tt-summary { font-size: 14px; color: #1F2329; margin: 10px 0 0; }
+  .red-num { color: #FF4D4F; }
+
+  /* ===== Simple list (Assembly) ===== */
+  .simple-list { list-style: none; margin: 0; padding: 0; }
+  .simple-list li { padding: 18px 16px; border-bottom: 1px solid rgba(25,65,125,0.1); }
+  .simple-list li:last-child { border-bottom: none; }
+  .item-bold { font-weight: 400; color: #1F2329; }
+  .item-line { color: #1F2329; font-weight: 300; margin-top: 8px; }
+
+  /* ===== Empty state ===== */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 0; gap: 8px; }
+  .empty-text { color: rgba(0,0,0,0.45); font-size: 14px; }
+
+  /* ===== Courses table ===== */
+  .course-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; color: #1F2329; }
+  .course-table { width: 100%; border-collapse: collapse; }
+  .course-table th, .course-table td {
+    border-bottom: 1px solid #E8ECF2; border-right: 1px solid #E8ECF2;
+    padding: 8px; font-size: 14px; text-align: left;
+  }
+  .course-table th { background: #F8FAFC; font-weight: 600; color: #1F2329; }
+  .course-table td { color: #1F2329; }
+  .course-table th:last-child, .course-table td:last-child { border-right: none; }
+  .course-name { color: #951105; }
+
+  /* ===== Teachers ===== */
+  .nested-card { border: 1px solid #E8ECF2; border-radius: 8px; padding: 24px; }
+  .teacher-item { display: flex; padding: 12px 0; border-bottom: 1px solid rgba(25,65,125,0.1); }
+  .teacher-item:first-child { padding-top: 0; }
+  .teacher-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .teacher-role {
+    background: rgb(211,211,211); min-height: 64px;
+    display: flex; align-items: center; justify-content: flex-end;
+    text-align: right; font-weight: 600; color: #1F2329;
+    padding: 0 10px; flex: 0 0 44%; border-radius: 4px 0 0 4px;
+  }
+  .teacher-info { display: flex; align-items: center; gap: 12px; padding-left: 16px; flex: 1; }
+  .teacher-avatar {
+    width: 64px; aspect-ratio: 50 / 69; border-radius: 10px; flex: none;
+    background: #e9e9e9; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; color: #666; font-size: 18px;
+  }
+  .teacher-name { font-weight: 600; color: #1F2329; }
+  .teacher-meta { color: rgba(0,0,0,0.65); }
+
+  /* ===== Footer ===== */
+  .app-footer {
+    text-align: center; background: #4A0000; color: rgba(255,255,255,0.65);
+    padding: 24px; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .app-footer a { color: inherit; }
+</style>
+</head>
+<body>
+  <div id="page">
+    <header class="app-header">
+      <a href="index.html"><img class="logo" src="assets/logo.svg" alt="logo"></a>
+      <ul class="menu">
+        <li><a href="https://www.alevel.com.cn">Website</a></li>
+        <li class="active"><a href="index.html">Home</a></li>
+      </ul>
+      <div class="header-right">
+        <button class="header-btn" type="button">
+          <svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M573 421c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40zm-280 0c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40z"></path><path d="M894 345a343.92 343.92 0 00-189-130v.1c-17.1-19-36.4-36.5-58-52.1-163.7-119-393.5-82.7-513 81-96.3 133-92.2 311.9 6 439l.8 132.6c0 3.2.5 6.4 1.5 9.4a31.95 31.95 0 0040.1 20.9L309 806c33.5 11.9 68.1 18.7 102.5 20.6l-.5.4c89.1 64.9 205.9 84.4 313 49l127.1 41.4c3.2 1 6.5 1.6 9.9 1.6 17.7 0 32-14.3 32-32V753c88.1-119.6 90.4-284.9 1-408zM323 735l-12-5-99 31-1-104-8-9c-84.6-103.2-90.2-251.9-11-361 96.4-132.2 281.2-161.4 413-66 132.2 96.1 161.5 280.6 66 412-80.1 109.9-223.5 150.5-348 102zm505-17l-8 10 1 104-98-33-12 5c-56 20.8-115.7 22.5-171 7l-.2-.1A367.31 367.31 0 00729 676c76.4-105.3 88.8-237.6 44.4-350.4l.6.4c23 16.5 44.1 37.1 62 62 72.6 99.6 68.5 235.2-8 330z"></path><path d="M433 421c-23.1 0-41 17.9-41 40s17.9 40 41 40c21.1 0 39-17.9 39-40s-17.9-40-39-40z"></path></svg>
+          Feedback
+        </button>
+        <button class="header-btn" type="button">
+          <span class="account-avatar"><svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M858.5 763.6a374 374 0 00-80.6-119.5 375.63 375.63 0 00-119.5-80.6c-.4-.2-.8-.3-1.2-.5C719.5 518 760 444.7 760 362c0-137-111-248-248-248S264 225 264 362c0 82.7 40.5 156 102.8 201.1-.4.2-.8.3-1.2.5-44.8 18.9-85 46-119.5 80.6a375.63 375.63 0 00-80.6 119.5A371.7 371.7 0 00136 901.8a8 8 0 008 8.2h60c4.4 0 7.9-3.5 8-7.8 2-77.2 33-149.5 87.8-204.3 56.7-56.7 132-87.9 212.2-87.9s155.5 31.2 212.2 87.9C779 752.7 810 825 812 902.2c.1 4.4 3.6 7.8 8 7.8h60a8 8 0 008-8.2c-1-47.8-10.9-94.3-29.5-138.2zM512 534c-45.9 0-89.1-17.9-121.6-50.4S340 407.9 340 362c0-45.9 17.9-89.1 50.4-121.6S466.1 190 512 190s89.1 17.9 121.6 50.4S684 316.1 684 362c0 45.9-17.9 89.1-50.4 121.6S557.9 534 512 534z"></path></svg></span>
+          <span id="headerName"></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      <nav class="breadcrumb">
+        <a href="index.html">Home</a><span class="sep">/</span><span>Timetable</span>
+      </nav>
+
+      <div class="cards-grid">
+        <!-- Student info -->
+        <section class="card full">
+          <div class="card-body">
+            <div class="student-summary">
+              <div class="student-avatar" id="studentAvatar"></div>
+              <div class="student-info">
+                <span class="tag tag-id" id="infoStudentNo"></span>
+                <span class="tag tag-enrolled">Enrolled</span>
+                <span class="name-en" id="infoEnName"></span>
+                <span class="enroll-line" id="infoFormGroup"></span>
+                <span class="name-zh" id="infoZhName"></span>
+                <span class="enroll-line">Day Student</span>
+                <span class="name-pinyin" id="infoPinyin"></span>
+                <span class="enroll-empty"></span>
+              </div>
+            </div>
+
+            <div class="collapse" id="moreInfoCollapse">
+              <button class="collapse-header" type="button">
+                <span class="collapse-arrow"><svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"></path></svg></span>
+                <span class="more-info-title">More Info</span>
+              </button>
+              <div class="collapse-content">
+                <table class="desc-table"><tbody id="descBody"></tbody></table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Student navigation -->
+        <section class="card full">
+          <div class="card-body">
+            <nav class="tabs" aria-label="Student navigation">
+              <button class="tab active" type="button">Timetable</button>
+              <button class="tab" type="button">Report</button>
+              <button class="tab" type="button">Homework</button>
+              <button class="tab" type="button">Attendance</button>
+              <button class="tab" type="button">FT Comment</button>
+              <button class="tab" type="button">Referral</button>
+              <button class="tab" type="button">Assessment</button>
+              <button class="tab" type="button">Exam Timetable</button>
+              <button class="tab" type="button">Teacher Availability</button>
+              <button class="tab" type="button">Free Classroom</button>
+              <button class="tab" type="button">ECA</button>
+              <button class="tab" type="button">Achievement &amp; GCA</button>
+            </nav>
+          </div>
+        </section>
+
+        <!-- Timetable -->
+        <section class="card full">
+          <div class="card-head"><div class="card-head-title">Timetable</div></div>
+          <div class="card-body">
+            <div class="tt-controls">
+              <span class="tt-label">Academic Year</span>
+              <div class="tt-select"><span class="academic-year">2026-2027</span>
+                <svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path></svg>
+              </div>
+              <div class="tt-date"><span class="current-date">2026-10-08</span>
+                <svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z"></path></svg>
+              </div>
+              <span class="tt-week">This week is <span class="red">Week 8, Week A</span></span>
+            </div>
+
+            <table class="tt-table">
+              <colgroup>
+                <col style="width: 13.8%">
+                <col style="width: 17.24%">
+                <col style="width: 17.24%">
+                <col style="width: 17.24%">
+                <col style="width: 17.24%">
+                <col style="width: 17.24%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th><div class="day-wrap"><span class="day-name">Monday</span><span class="day-date">Oct 5</span></div></th>
+                  <th><div class="day-wrap"><span class="day-name">Tuesday</span><span class="day-date">Oct 6</span></div></th>
+                  <th><div class="day-wrap"><span class="day-name">Wednesday</span><span class="day-date">Oct 7</span></div></th>
+                  <th><div class="day-wrap"><span class="day-name">Thursday</span><span class="day-date">Oct 8</span></div></th>
+                  <th><div class="day-wrap"><span class="day-name">Friday</span><span class="day-date">Oct 9</span></div></th>
+                </tr>
+              </thead>
+              <tbody id="ttBody"></tbody>
+            </table>
+
+            <p class="tt-summary">Totally <span class="red-num">60</span> periods per fortnight</p>
+            <p class="tt-summary"><span class="red-num">30</span> periods in week A and <span class="red-num">30</span> periods in week B</p>
+          </div>
+        </section>
+
+        <!-- Assembly -->
+        <section class="card">
+          <div class="card-head"><div class="card-head-title">Assembly</div></div>
+          <div class="card-body listless">
+            <ul class="simple-list" id="assemblyList"></ul>
+          </div>
+        </section>
+
+        <!-- Mentoring -->
+        <section class="card">
+          <div class="card-head"><div class="card-head-title">Mentoring</div></div>
+          <div class="card-body">
+            <div class="empty-state">
+              <svg width="64" height="41" viewBox="0 0 64 41" fill="none" aria-hidden="true">
+                <ellipse cx="32" cy="34" rx="32" ry="7" fill="#f5f5f5" stroke="#d9d9d9"></ellipse>
+                <rect x="14" y="0" width="36" height="28" rx="2" fill="#fafafa" stroke="#d9d9d9"></rect>
+                <path d="M22 8h20M22 14h20M22 20h12" stroke="#d9d9d9" stroke-width="2" stroke-linecap="round"></path>
+              </svg>
+              <div class="empty-text">No data</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Courses -->
+        <section class="card full">
+          <div class="card-head"><div class="card-head-title">Courses</div></div>
+          <div class="card-body">
+            <div class="course-controls">
+              <span>Academic Year</span>
+              <div class="tt-select"><span class="academic-year">2026-2027</span>
+                <svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path></svg>
+              </div>
+            </div>
+            <table class="course-table">
+              <thead>
+                <tr><th>Course</th><th>Teachers</th><th>TL</th><th>TA</th><th>A</th><th>L</th><th>X</th><th>S</th><th>V</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="course-name">Pastoral-A1.House1.PAS</span></td><td>Gerald Benson</td><td>11</td><td>1(9.09%)</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">Mathematics-AL.C.MAT1</span></td><td>Barbera Denise</td><td>42</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">Computer Science-AS.A.CPU1</span></td><td>Vangril Bob</td><td>40</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">Physics-AS.B.PHY1</span></td><td>Daphne Yu</td><td>42</td><td>0(0.00%)</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">PSHE-A1.House1.PSHE</span></td><td>Gordon Benson</td><td>7</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">Economics-AS.F.ECO1</span></td><td>Alvis Mark</td><td>38</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">English-A1.E.ENG.GEN</span></td><td>Edwin Howard</td><td>20</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">PE-A1.PE.M  </span></td><td>Edgar David</td><td>8</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">MR/Assembly</span></td><td></td><td>35</td><td>0(0.00%)</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td><span class="course-name">Evening Study</span></td><td></td><td>33</td><td>7(21.21%)</td><td>6</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+              </tbody>
+            </table>
+
+            <div class="collapse" id="droppedCollapse">
+              <button class="collapse-header dropped" type="button">
+                <span class="collapse-arrow"><svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"></path></svg></span>
+                <span class="dropped-title">Dropped Courses</span>
+              </button>
+              <div class="collapse-content">
+                <table class="course-table">
+                  <thead>
+                    <tr><th>Course</th><th>Teachers</th><th>TL</th><th>TA</th><th>A</th><th>L</th><th>X</th><th>S</th><th>V</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><span class="course-name">Computer Science-A1.GNT.CPU.TU56</span></td><td>Joseph Barton</td><td>10</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td><span class="course-name">English-A1.D.ENG.LIT</span></td><td>Louise Coleman</td><td>24</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td><span class="course-name">Chemistry-AS.F.CHE1</span></td><td>Tony Zeng</td><td>38</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td><span class="course-name">Economics-AS.E.ECO2</span></td><td>Harry Van Roger</td><td>38</td><td>0(0.00%)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Teachers -->
+        <section class="card">
+          <div class="card-head"><div class="card-head-title">Teachers</div></div>
+          <div class="card-body">
+            <div class="nested-card">
+              <div class="teacher-item">
+                <div class="teacher-role">Form Tutor :</div>
+                <div class="teacher-info">
+                  <div class="teacher-avatar">GB</div>
+                  <div>
+                    <div class="teacher-name">Gerald Benson</div>
+                    <div class="teacher-meta">Office:A313</div>
+                    <div class="teacher-meta">Tel:24231</div>
+                  </div>
+                </div>
+              </div>
+              <div class="teacher-item">
+                <div class="teacher-role">University Admissions Counsellor :</div>
+                <div class="teacher-info">
+                  <div class="teacher-avatar">BY</div>
+                  <div>
+                    <div class="teacher-name">Bruce York</div>
+                    <div class="teacher-meta">Office:B225</div>
+                    <div class="teacher-meta">Tel:23361</div>
+                  </div>
+                </div>
+              </div>
+              <div class="teacher-item">
+                <div class="teacher-role">Life Teacher :</div>
+                <div class="teacher-info">
+                  <div class="teacher-avatar">YM</div>
+                  <div>
+                    <div class="teacher-name">Yara Mary</div>
+                    <div class="teacher-meta">Office:D429</div>
+                    <div class="teacher-meta">Tel:31541</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">Copyright © Since 2003 Shenzhen College of International Education <a href="https://beian.miit.gov.cn/" rel="noopener noreferrer" target="_blank">粤ICP备16068108号</a></footer>
+  </div>
+
+<script>
+  // ===== Data =====
+
+  // Timetable grid: [label, time, type, period, [5 cells]]; cell = [subject, room, teacher] or null
+  var ROWS = [
+    ['form time', '07:50-08:00', 'white', null, [['Form Time-A1.House1', 'A301', null], ['Form Time-A1.House1', 'A301', null], ['Form Time-A1.House1', 'Card Reader', null], ['Form Time-A1.House1', 'A301', null], ['Form Time-A1.House1', 'Card Reader', null]]],
+    ['1', '08:10-08:50', 'lesson', 'P1', [['Computer Science-AS.A.CPU1','B332','VAB'], ['English-A1.E.ENG.GEN','A506','EDH'], ['Mathematics-AL.C.MAT1','A411','BDE'], ['Economics-AS.F.ECO1','A212','AVM'], null]],
+    ['2', '08:50-09:30', 'lesson', 'P2', [['Computer Science-AS.A.CPU1','B332','VAB'], ['English-A1.E.ENG.GEN','A506','EDH'], ['Mathematics-AL.C.MAT1','A411','BDE'], ['Economics-AS.F.ECO1','A212','AVM'], null]],
+    ['3', '09:40-10:20', 'lesson', 'P3', [['Physics-AS.B.PHY1','A809','DAY'], ['Economics-AS.F.ECO1','A212','AVM'], null, ['Computer Science-AS.A.CPU1','B332','VAB'], null]],
+    ['4', '10:20-11:00', 'lesson', 'P4', [['Physics-AS.B.PHY1','A809','DAY'], ['Economics-AS.F.ECO1','A212','AVM'], null, ['Computer Science-AS.A.CPU1','B332','VAB'], null]],
+    ['5', '11:20-12:00', 'lesson', 'P5', [['PE-A1.PE.M1', null, 'EDD'], null, ['PSHE-A1.House1.PSHE','A301','GOB'], null, ['Economics-AS.F.ECO1','A212','AVM']]],
+    ['6', '12:00-12:40', 'lesson', 'P6', [['PE-A1.PE.M1', null, 'EDD'], null, null, null, ['Economics-AS.F.ECO1','A212','AVM']]],
+    ['lunch', '12:40-13:10', 'lunch', null, [null, null, null, null, null]],
+    ['pastoral', '13:20-13:30', 'white', null, [null, null, null, null, null]],
+    ['7', '13:40-14:20', 'lesson', 'P7', [['Mathematics-AL.C.MAT1','A411','BDE'], ['Computer Science-AS.A.CPU1','B332','VAB'], ['English-A1.E.ENG.GEN','A506','EDH'], ['Physics-AS.B.PHY1','A809','DAY'], null]],
+    ['8', '14:20-15:00', 'lesson', 'P8', [['Mathematics-AL.C.MAT1','A411','BDE'], ['Computer Science-AS.A.CPU1','B332','VAB'], ['English-A1.E.ENG.GEN','A506','EDH'], ['Physics-AS.B.PHY1','A809','DAY'], null]],
+    ['9', '15:10-15:50', 'lesson', 'P9', [null, ['Physics-AS.B.PHY1','A809','DAY'], null, ['Mathematics-AL.C.MAT1','A411','BDE'], null]],
+    ['10', '15:50-16:30', 'lesson', 'P10', [null, ['Physics-AS.B.PHY1','A809','DAY'], null, ['Mathematics-AL.C.MAT1','A411','BDE'], null]],
+    ['11', '16:40-17:30', 'transparent', 'P11', [null, null, null, null, null]],
+    ['12', '17:30-18:30', 'transparent', 'P12', [null, null, null, null, null]],
+    ['13', '19:00-20:00', 'transparent', 'P13', [null, null, null, null, null]],
+    ['14', '20:00-21:00', 'transparent', 'P14', [null, null, null, null, null]]
+  ];
+
+  var BG = { white: '#FFFFFF', lesson: '#F4F4FF', lunch: '#EEEEEE', transparent: 'transparent' };
+
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function enrollmentFor(grade) {
+    var g = String(grade).toUpperCase();
+    var now = new Date();
+    var year = now.getFullYear();
+    var beforeAug = (now.getMonth() + 1) < 8; // 当前月份小于 8 月
+    var base = beforeAug ? year - 1 : year;
+    var shift = { G2: 1, A1: 2, A2: 3 }[g] || 0; // G1 不偏移
+    return (base - shift) + '-08-01';
+  }
+
+  // 中文转拼音：使用 pinyin-pro 完整字典（支持多音字与姓氏读音），替代手写枚举表
+  function surnamePinyin(zhName, enName) {
+    var ch = (zhName || '').trim().charAt(0);
+    if (ch && window.pinyinPro && typeof window.pinyinPro.pinyin === 'function') {
+      var arr = window.pinyinPro.pinyin(ch, { surname: 'head', toneType: 'none', v: true, type: 'array' });
+      if (arr && arr[0]) return arr[0].toLowerCase();
+    }
+    return (enName || 'student').toLowerCase();
+  }
+
+  function toPinyin(zhName) {
+    var s = (zhName || '').trim();
+    if (!s) return '';
+    if (window.pinyinPro && typeof window.pinyinPro.pinyin === 'function') {
+      var arr = window.pinyinPro.pinyin(s, { surname: 'head', toneType: 'none', v: true, type: 'array' });
+      return arr.map(function(p) { return cap(p); }).join(' ');
+    }
+    return '';
+  }
+
+  // 根据年级决定课程名中的等级段（第一个点之前的段）
+  function courseLevel(subject, grade) {
+    var g = String(grade || '').toUpperCase();
+    if (g === 'G1' || g === 'G2') return g;
+    if (g === 'A2') return 'AL';
+    if (g === 'A1') return (subject === 'Mathematics') ? 'AL' : 'AS';
+    return null;
+  }
+
+  // 将课程名中的等级段替换为年级对应的等级
+  function gradeCourseName(name, grade) {
+    if (!name) return name;
+    var i = name.indexOf('-');
+    if (i < 0) return name;
+    var subject = name.slice(0, i);
+    var rest = name.slice(i + 1);
+    var j = rest.indexOf('.');
+    if (j < 0) return name;
+    if (rest.slice(0, j) === 'ALL') return name;
+    var level = courseLevel(subject, grade);
+    if (!level) return name;
+    return subject + '-' + level + rest.slice(j);
+  }
+
+  // 将课程名中的 House1 占位替换为登录时填写的 house + 班级号（形如 Metal2）
+  function studentCourseName(name, student) {
+    var n = gradeCourseName(name, student ? student.grade : null);
+    if (!n) return n;
+    if (student && student.house) {
+      n = n.split('House1').join(cap(student.house) + student.classNo);
+    }
+    return n;
+  }
+
+  // ===== Render timetable =====
+  function renderTimetable(student) {
+    var html = '';
+    ROWS.forEach(function(row) {
+      var label = row[0], time = row[1], type = row[2], period = row[3], cells = row[4];
+      var bg = BG[type];
+      html += '<tr>';
+      html += '<td class="tt-period-label" style="background:' + bg + '"><span class="period-name">' + label + '</span><br><span class="period-time">' + time + '</span></td>';
+      cells.forEach(function(cell) {
+        var inner = '';
+        if (cell) {
+          inner += '<div class="tt-cell-inner"><span class="tt-subject">' + studentCourseName(cell[0], student) + '</span>';
+          if (cell[1]) inner += ' (' + cell[1] + ')';
+          if (cell[2]) inner += ' (' + cell[2] + ')';
+          inner += '</div>';
+        }
+        if (period) inner += '<span class="tt-period">' + period + '</span>';
+        html += '<td class="tt-cell" style="background:' + bg + '"><div class="tt-cell-body">' + inner + '</div></td>';
+      });
+      html += '</tr>';
+    });
+    document.getElementById('ttBody').innerHTML = html;
+  }
+
+  // 更新 Courses 列表与 Dropped Courses 里的课程名
+  function updateCourseNames(student) {
+    document.querySelectorAll('.course-name').forEach(function(el) {
+      el.textContent = studentCourseName(el.textContent, student);
+    });
+  }
+
+  // ===== Personal info =====
+  function renderDescriptions(rows) {
+    var html = '';
+    rows.forEach(function(kv) {
+      html += '<tr><td><span class="desc-label">' + kv[0] + '</span><span class="desc-value">' + kv[1] + '</span></td></tr>';
+    });
+    document.getElementById('descBody').innerHTML = html;
+  }
+
+  function populateInfo(s) {
+    document.getElementById('headerName').textContent = s.enName;
+    document.getElementById('infoStudentNo').textContent = s.studentNo;
+    document.getElementById('infoEnName').textContent = s.enName;
+    document.getElementById('infoZhName').textContent = s.zhName;
+    document.getElementById('infoPinyin').textContent = toPinyin(s.zhName);
+
+    var formGroup = s.grade.toUpperCase() + '.' + cap(s.house) + s.classNo;
+    document.getElementById('infoFormGroup').textContent = formGroup;
+
+    var av = document.getElementById('studentAvatar');
+    if (s.avatar) {
+      av.innerHTML = '<img src="' + s.avatar + '" alt="avatar">';
+    } else {
+      av.textContent = s.enName.charAt(0).toUpperCase();
+    }
+
+    var schoolEmail = 's' + s.studentNo + '.' + surnamePinyin(s.zhName, s.enName) + '@stu.scie.com.cn';
+    renderDescriptions([
+      ['Enrollment', enrollmentFor(s.grade)],
+      ['Grade', s.grade.toUpperCase()],
+      ['House', cap(s.house)],
+      ['Dormitory Kind', 'Day Student'],
+      ['Dormitory', ''],
+      ['Mobile', s.mobile],
+      ['School Email', schoolEmail],
+      ['Student Email', s.email]
+    ]);
+  }
+
+  // 渲染 Assembly：展示课表第一行（form time）每天的内容
+  function renderAssembly(student) {
+    var DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    var formRow = ROWS[0];
+    var time = formRow[1];
+    var cells = formRow[4];
+    var formGroup = student ? (student.grade.toUpperCase() + '.' + cap(student.house) + student.classNo) : '';
+    var dates = weekDayFullDates();
+    var html = '';
+    for (var i = 0; i < DAYS.length; i++) {
+      var cell = cells[i];
+      var room = (cell && cell[1]) ? cell[1] : '';
+      html += '<li>';
+      html += '<div class="item-bold">' + DAYS[i] + ' ' + dates[i] + '</div>';
+      html += '<div class="item-line">Form Time(' + time + ') (' + formGroup + ') (' + room + ')</div>';
+      html += '</li>';
+    }
+    document.getElementById('assemblyList').innerHTML = html;
+  }
+
+  // ===== Collapse toggles (animated) =====
+  document.querySelectorAll('.collapse').forEach(function(c) {
+    var content = c.querySelector('.collapse-content');
+    var header = c.querySelector('.collapse-header');
+    header.addEventListener('click', function() {
+      var isOpen = c.classList.contains('open');
+      if (isOpen) {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        content.offsetHeight; // force reflow
+        content.style.maxHeight = '0px';
+        c.classList.remove('open');
+      } else {
+        c.classList.add('open');
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    });
+  });
+
+  // ===== Whole-page scaling (mimics real site: fixed 992px design scaled to viewport) =====
+  function applyScale() {
+    var base = 992;
+    var vw = document.documentElement.clientWidth;
+    var scale = vw < base ? vw / base : 1;
+    var page = document.getElementById('page');
+    page.style.transform = 'scale(' + scale + ')';
+    document.body.style.height = Math.ceil(page.scrollHeight * scale) + 'px';
+  }
+  window.addEventListener('resize', applyScale);
+
+  // 根据当前日期计算学年（8月及以前：上一年-今年；9月起：今年-下一年）
+  function academicYear() {
+    var now = new Date();
+    var y = now.getFullYear();
+    var m = now.getMonth() + 1;
+    if (m >= 9) return y + '-' + (y + 1);
+    return (y - 1) + '-' + y;
+  }
+
+  // 当前日期（YYYY-MM-DD）
+  function currentDate() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  // 当前日期所在周的周一~周五日期（如 Oct 5）
+  function weekDayDates() {
+    var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var now = new Date();
+    var day = now.getDay();
+    var mondayOffset = (day === 0 ? -6 : 1 - day);
+    var monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+    var out = [];
+    for (var i = 0; i < 5; i++) {
+      var d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+      out.push(MONTHS[d.getMonth()] + ' ' + d.getDate());
+    }
+    return out;
+  }
+
+  // 当前日期所在周的周一~周五完整日期（如 2026-10-05）
+  function weekDayFullDates() {
+    var now = new Date();
+    var day = now.getDay();
+    var mondayOffset = (day === 0 ? -6 : 1 - day);
+    var monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+    var out = [];
+    for (var i = 0; i < 5; i++) {
+      var d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      var dd = String(d.getDate()).padStart(2, '0');
+      out.push(d.getFullYear() + '-' + m + '-' + dd);
+    }
+    return out;
+  }
+
+  // ===== Init =====
+  document.querySelectorAll('.academic-year').forEach(function(el) {
+    el.textContent = academicYear();
+  });
+  document.querySelectorAll('.current-date').forEach(function(el) {
+    el.textContent = currentDate();
+  });
+  var weekDates = weekDayDates();
+  document.querySelectorAll('.day-date').forEach(function(el, i) {
+    el.textContent = weekDates[i];
+  });
+
+  var student = null;
+  try {
+    var saved = sessionStorage.getItem('fakeCmsStudent');
+    if (saved) student = JSON.parse(saved);
+  } catch (e) {}
+  renderTimetable(student);
+  updateCourseNames(student);
+  renderAssembly(student);
+  if (student) populateInfo(student);
+  applyScale();
+</script>
+</body>
+</html>

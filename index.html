@@ -136,7 +136,7 @@
     text-align: left;
   }
   .welcome-col a { font-size: 14px; line-height: 1.5; color: rgb(149,17,5); }
-  .avatar-photo { width: 48px; height: 66px; object-fit: cover; border-radius: 2px; }
+  .avatar-photo { width: 48px; aspect-ratio: 50 / 69; object-fit: cover; border-radius: 2px; }
 
   /* ===== Student info popover ===== */
   .info-popover-wrap { position: relative; display: inline-block; }
@@ -171,14 +171,16 @@
     transform: rotate(45deg);
     border-radius: 1px;
   }
-  .info-popover table { width: 100%; border-collapse: collapse; }
-  .info-popover td {
+  .info-popover .ip-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
     padding: 5px 0;
     font-size: 14px;
+    font-weight: 300;
     line-height: 1.5;
-    vertical-align: top;
   }
-  .info-popover .ip-label { color: rgba(0,0,0,0.45); white-space: nowrap; padding-right: 14px; }
+  .info-popover .ip-label { color: #8c8c8c; white-space: nowrap; flex: none; }
   .info-popover .ip-content { color: rgb(31,35,41); }
   .info-popover .ip-tag {
     display: inline-block;
@@ -227,6 +229,7 @@
   .form-field { display: flex; flex-direction: column; gap: 6px; }
   .form-label { font-size: 13px; font-weight: 600; color: rgb(31,35,41); }
   .form-input, .form-select {
+    width: 100%;
     height: 40px;
     padding: 0 12px;
     font-size: 14px;
@@ -237,6 +240,16 @@
     font-family: inherit;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
+  .form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 0 28px 0 12px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='64 64 896 896' width='12' height='12' fill='%23999'%3E%3Cpath d='M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px 12px;
+  }
   .form-input:focus, .form-select:focus {
     outline: none;
     border-color: rgb(149,17,5);
@@ -245,7 +258,7 @@
   .form-input.error, .form-select.error { border-color: #ff4d4f; }
   .field-error { font-size: 12px; color: #ff4d4f; min-height: 16px; }
   .form-row { display: flex; gap: 12px; }
-  .form-row .form-field { flex: 1; }
+  .form-row .form-field { flex: 1; min-width: 0; }
   .avatar-upload { display: flex; align-items: center; gap: 14px; }
   .avatar-preview {
     width: 64px; height: 64px;
@@ -449,7 +462,7 @@
           </a>
         </div>
         <div class="func-cell">
-          <a href="/cms/students/my/timetable">
+          <a href="timetable.html">
             <div class="func-inner">
               <span class="badge">
                 <span class="avatar" style="background-color: maroon;">
@@ -772,25 +785,36 @@
                   <div class="card-body">
                     <div class="welcome-body">
                       <div class="welcome-col">
-                        <span class="welcome-title" id="welcomeName">Welcome, George</span>
+                        <span class="welcome-title" id="welcomeName">Welcome</span>
                         <span class="info-popover-wrap">
                           <button class="link-btn" id="showInfoBtn" type="button">Show Student Info</button>
                           <div class="info-popover" id="studentInfoPopover" role="tooltip">
-                            <table>
-                              <tbody>
-                                <tr><td class="ip-label">Chinese Name</td><td class="ip-content" id="infoChineseName">帅哥</td></tr>
-                                <tr><td class="ip-label">Student ID</td><td class="ip-content" id="infoStudentId">24xxx</td></tr>
-                                <tr><td class="ip-label">Form Group</td><td class="ip-content" id="infoFormGroup">AX.MetalX</td></tr>
-                                <tr><td class="ip-label">Status</td><td class="ip-content"><span class="ip-tag">Enrolled</span></td></tr>
-                                <tr><td class="ip-label">Boarding</td><td class="ip-content">Day Student</td></tr>
-                              </tbody>
-                            </table>
+                            <div class="ip-row">
+                              <span class="ip-label">Chinese Name :</span>
+                              <span class="ip-content" id="infoChineseName"></span>
+                            </div>
+                            <div class="ip-row">
+                              <span class="ip-label">Student ID :</span>
+                              <span class="ip-content" id="infoStudentId"></span>
+                            </div>
+                            <div class="ip-row">
+                              <span class="ip-label">Form Group :</span>
+                              <span class="ip-content" id="infoFormGroup"></span>
+                            </div>
+                            <div class="ip-row">
+                              <span class="ip-label">Status :</span>
+                              <span class="ip-content"><span class="ip-tag">Enrolled</span></span>
+                            </div>
+                            <div class="ip-row">
+                              <span class="ip-label">Boarding :</span>
+                              <span class="ip-content">Day Student</span>
+                            </div>
                           </div>
                         </span>
                         <a href="/cms/auth/change_password">Change Password</a>
                         <a href="#" style="color: rgb(149,17,5);">Log out</a>
                       </div>
-                      <div><img class="avatar-photo" id="userAvatar" alt="User profile photo" src="assets/avatar.jpg"></div>
+                      <div><img class="avatar-photo" id="userAvatar" alt="User profile photo"></div>
                     </div>
                   </div>
                 </div>
@@ -825,6 +849,21 @@
     if (errorId === 'err-infoFile' && infoUploadPlaceholder) {
       infoUploadPlaceholder.classList.toggle('error', !!message);
     }
+  }
+
+  function renderMainApp(student) {
+    var capitalize = function(s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+    var formGroup = student.grade.toUpperCase() + '.' + capitalize(student.house) + student.classNo;
+
+    document.getElementById('welcomeName').textContent = 'Welcome, ' + student.enName;
+    document.getElementById('infoChineseName').textContent = student.zhName;
+    document.getElementById('infoStudentId').textContent = student.studentNo;
+    document.getElementById('infoFormGroup').textContent = formGroup;
+    if (student.avatar) document.getElementById('userAvatar').src = student.avatar;
+
+    loginScreen.classList.add('hidden');
+    mainApp.classList.remove('hidden');
+    window.scrollTo(0, 0);
   }
 
   avatarInput.addEventListener('change', function() {
@@ -998,18 +1037,23 @@
     if (!valid) return;
 
     function populate() {
-      var capitalize = function(s) { return s.charAt(0).toUpperCase() + s.slice(1); };
-      var formGroup = grade.toUpperCase() + '.' + capitalize(house) + classNo;
+      var student = {
+        enName: enName,
+        zhName: zhName,
+        studentNo: studentNo,
+        house: house,
+        grade: grade,
+        classNo: classNo,
+        email: email,
+        mobile: mobile,
+        avatar: avatarDataUrl
+      };
 
-      document.getElementById('welcomeName').textContent = 'Welcome, ' + enName;
-      document.getElementById('infoChineseName').textContent = zhName;
-      document.getElementById('infoStudentId').textContent = studentNo;
-      document.getElementById('infoFormGroup').textContent = formGroup;
-      document.getElementById('userAvatar').src = avatarDataUrl;
+      try {
+        sessionStorage.setItem('fakeCmsStudent', JSON.stringify(student));
+      } catch (e) {}
 
-      loginScreen.classList.add('hidden');
-      mainApp.classList.remove('hidden');
-      window.scrollTo(0, 0);
+      renderMainApp(student);
     }
 
     if (avatarDataUrl) {
@@ -1047,6 +1091,18 @@
       if (e.key === 'Escape') infoPop.classList.remove('open');
     });
   }
+
+  // Restore session: skip the login stage if already signed in
+  (function() {
+    var saved = null;
+    try { saved = sessionStorage.getItem('fakeCmsStudent'); } catch (e) {}
+    if (saved) {
+      try {
+        var student = JSON.parse(saved);
+        if (student && student.enName) renderMainApp(student);
+      } catch (e) {}
+    }
+  })();
 </script>
 </body>
 </html>
